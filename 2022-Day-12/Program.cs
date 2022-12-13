@@ -1,125 +1,102 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+using System.Xml;
 
 namespace _2022_Day_12
 {
     internal class Program
     {
-        static void Main(string[] args)
+        public static int[,] grid;
+        public static int gX, gY;
+
+        private static void Main(string[] args)
         {
             string[] input = File.ReadAllLines("../../input.txt");
 
-            int[,] grid = new int[input.Length,input[0].Length];
+            (gX, gY) = (input[0].Length, input.Length);
 
-            (int,int) start = (0,0);
-            (int,int) end = (0, 0);
-            
+            grid = new int[gY, gX];
+
+            (int sX, int sY) = (0, 0);
+            (int eX, int eY) = (0, 0);
+
             for (int y = 0; y < input.Length; y++)
             {
-                char[] squares = input[y].ToCharArray();
-                for (int x = 0; x < squares.Length; x++)
+                for (int x = 0; x < input[0].Length; x++)
                 {
-                    if (squares[x] == 'S' || squares[x] == 'E')
+                    if (input[y][x] == 'S')
                     {
-                        if (squares[x] == 'S') start = (x, y);
-                        else end = (x, y);
-                        grid[y, x] = squares[x] == 'S' ? 0 : 25;
+                        (sX, sY) = (x, y);
+                        grid[y, x] = 0;
                     }
-                    else grid[y, x] = Math.Abs((int)'a' - (int)squares[x]);
+                    else if (input[y][x] == 'E')
+                    {
+                        (eX, eY) = (x, y);
+                        grid[y, x] = (int)('z' - 'a');
+                    }
+                    else grid[y, x] = (int)(input[y][x] - 'a');
                 }
             }
 
-            Graph<(int, int)> myGraph = new Graph<(int, int)>();
+            Node startNode = new Node { X = sX, Y = sY };
+            Node endNode = new Node { X = eX, Y = eY };
 
-            for (int y = 0; y < grid.GetLength(0); y++)
-            {
-                for (int x = 0; x < grid.GetLength(1); x++)
-                {
-                    (int, int) parent = (x,y);
-                    myGraph.AddNode(parent);
-                    
-                    if (x - 1 >= 0)
-                    {
-                        if (grid[y, x - 1] - 1 == grid[y, x] || grid[y, x - 1] == grid[y, x] || grid[y, x - 1] + 1== grid[y, x])
-                        {
-                            myGraph.AddConnection(parent, (x - 1,y));
-                        }
-                    }
-                    if (y - 1 >= 0)
-                    {
-                        if (grid[y - 1, x] - 1 == grid[y, x] || grid[y - 1, x] == grid[y, x] || grid[y - 1, x] + 1 == grid[y, x])
-                        {
-                            myGraph.AddConnection(parent, (x, y - 1));
-                        }
-                    }
-                    if (x + 1 < grid.GetLength(1))
-                    {
-                        if (grid[y, x + 1] - 1 == grid[y, x] || grid[y, x + 1] == grid[y, x] || grid[y, x + 1] + 1 == grid[y, x])
-                        {
-                            myGraph.AddConnection(parent, (x + 1, y));
-                        }
-                    }
-                    if (y + 1 < grid.GetLength(0))
-                    {
-                        if (grid[y + 1, x] - 1 == grid[y, x] || grid[y + 1, x] == grid[y, x] || grid[y + 1, x] + 1== grid[y, x])
-                        {
-                            myGraph.AddConnection(parent, (x, y + 1));
-                        }
-                    }
-                }
-            }
-
-            myGraph.GetNode((0, 0));
-
-            Traversal<(int, int)> myTraversal = new Traversal<(int, int)>(myGraph);
-            var result = myTraversal.Dijkstra(start);
-
-            var path = RebuildPath<(int, int)>(result, end).ToList();
-
-            Console.WriteLine(string.Join(", ", path));
-            Console.WriteLine(path.Count);
+            Console.WriteLine("Count: ");
             Console.ReadLine();
         }
 
-        public static T[] RebuildPath<T>(Dictionary<T, T> prev, T goal)
+        private static int BFS(Node start, Node goal)
         {
-            if (prev == null) return new T[1];
-            List<T> sequence = new List<T>();
-            T u = goal;
+            Queue<Node> queue = new Queue<Node>();
+            Dictionary<Node, bool> explored = new Dictionary<Node, bool>();
+            Dictionary<Node, Node> parents = new Dictionary<Node, Node>();
 
-            while (prev.ContainsKey(u))
+            queue.Enqueue(start);
+            explored[start] = true;
+
+            int steps = 0;
+
+            while (queue.Count > 0)
             {
-                sequence.Insert(0, u);
-                u = prev[u];
+                Node temp = queue.Dequeue();
+
+                if (goal.X == temp.X && goal.Y == temp.Y) return steps;
+                //List<Node> neighbors = 
             }
 
-            return sequence.ToArray();
+            return -1;
         }
 
-        public static (int, int)[] GetNeighbors(int[,] grid, (int, int) node)
+        private static List<Node> GetNeighbors(Node node)
         {
-            List<(int, int)> viableNodes = new List<(int, int)>();
-            List<(int, int)> nodes = new List<(int, int)>();
-            if (node.Item1 > 0) nodes.Add((node.Item1 - 1, node.Item2));
-            if (node.Item2 > 0) nodes.Add((node.Item1, node.Item2 - 1));
-            if (node.Item1 < grid.GetLength(0) - 1) nodes.Add((node.Item1 + 1, node.Item2));
-            if (node.Item2 < grid.GetLength(1) - 1) nodes.Add((node.Item1, node.Item2 + 1));
-
-            int value = grid[node.Item1, node.Item2];
-            foreach ((int, int) child in nodes)
+            var neighbors = new List<Node>();
+            if (node.X > 0 && grid[node.X - 1, node.Y] <= grid[node.X, node.Y] + 1)
             {
-                if (value + 1 == grid[child.Item1, child.Item2]) viableNodes.Add(child);
+                neighbors.Add(new Node { X = node.X - 1, Y = node.Y });
+            }
+            if (node.X < gX - 1 && grid[node.X + 1, node.Y] <= grid[node.X, node.Y] + 1)
+            {
+                neighbors.Add(new Node { X = node.X + 1, Y = node.Y });
+            }
+            if (node.Y > 0 && grid[node.X, node.Y - 1] <= grid[node.X, node.Y] + 1)
+            {
+                neighbors.Add(new Node { X = node.X, Y = node.Y - 1 });
+            }
+            if (node.Y < gY - 1 && grid[node.X, node.Y + 1] <= grid[node.X, node.Y] + 1)
+            {
+                neighbors.Add(new Node { X = node.X, Y = node.Y + 1 });
             }
 
-            return viableNodes.ToArray();
+            return neighbors;
         }
+    }
+    public class Node
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+        public ulong Prio { get; set; }
+        public ulong BestDist { get; set; }
+        public long Index { get; set; }
     }
 }
