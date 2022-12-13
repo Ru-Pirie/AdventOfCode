@@ -4,23 +4,11 @@ const fs = require('fs');
 const input = fs.readFileSync('input.txt', 'utf-8')
 
 function part1(input) {
-    const splitInput = input.split('\r\n\r\n')
     const pairs = [];
-
-    splitInput.forEach(pair => {
-        const pair1 = pair.split('\r\n')[0];
-        const pair2 = pair.split('\r\n')[1];
-
-        pairs.push([pair1, pair2]);
-    })
+    input.split('\r\n\r\n').forEach(pair => pairs.push([pair.split('\r\n')[0], pair.split('\r\n')[1]]) )
 
     let sum = 0;
-
-    for (let i = 0; i < pairs.length; i++) {
-        const a = JSON.parse(pairs[i][0])
-        const b = JSON.parse(pairs[i][1])
-        if (compare(a, b)) sum += i + 1;
-    }
+    for (let i = 0; i < pairs.length; i++) if (compare(JSON.parse(pairs[i][0]), JSON.parse(pairs[i][1]))) sum += i + 1;
 
     return (sum);
 }
