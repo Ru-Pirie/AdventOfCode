@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace _2022_Day_14
@@ -78,20 +79,10 @@ namespace _2022_Day_14
 
             bool running = true;
 
+            List<(int, int)> sandPath = new List<(int, int)>();
+
             while (running)
             {
-                // Console.Clear();
-                // for (int y = 0; y < 10; y++)
-                // {
-                //     for (int x = 490; x < 510; x++)
-                //     {
-                //         Console.Write(sandGrid[y, x]);
-                //     }
-                //     Console.WriteLine();
-                // }
-                //
-                // Console.ReadLine();
-
                 int sX = 500;
                 int sY = 0;
 
@@ -126,6 +117,7 @@ namespace _2022_Day_14
                     else
                     {
                         sandGrid[sY, sX] = 'o';
+                        sandPath.Add((sY, sX));
                         countA++;
                         falling = false;
                     }
@@ -133,6 +125,50 @@ namespace _2022_Day_14
             }
 
             Console.WriteLine($"Count: {countA}");
+            Console.ReadLine();
+
+            // Visualizer to see set console char size to 6
+            Console.CursorVisible = false;
+            for (int y = 0; y < lowest; y++)
+            {
+                bool skip = false;
+                for (int x = 150; x < y + 500; x++)
+                {
+                    if (sandGrid[y, x] != '\0')
+                    {
+
+                        if (sandGrid[y, x] == '#')
+                        {
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                            Console.Write(sandGrid[y, x]);
+                            Console.ResetColor();
+                        }
+                        else if (sandGrid[y, x] == 'o')
+                        {
+                            Console.Write(' ');
+                        }
+                        else
+                        {
+                            Console.Write(sandGrid[y, x]);
+                        }
+                    }
+                    else
+                    {
+                        if (!skip) Console.Write(' ');
+                    }
+                }   
+                Console.WriteLine();
+            }
+
+            for (int i = 0; i < sandPath.Count; i++)
+            {
+                Console.SetCursorPosition(sandPath[i].Item2 - 150, sandPath[i].Item1 + 2);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write('o');
+                // Waste some cpu cycles
+                for (int j = 0; j < 200; j++) { Console.ResetColor(); }
+            }
+
             Console.ReadLine();
         }
     }
