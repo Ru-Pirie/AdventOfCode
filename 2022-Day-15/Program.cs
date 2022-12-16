@@ -71,7 +71,7 @@ namespace _2022_Day_15
                 }
             }
 
-            Console.WriteLine($"Count: {countA - beaconOffset.Count}");
+            Console.WriteLine($"P1: {countA - beaconOffset.Count}");
 
             (int, int)[] directions = { (-1, -1), (-1, 1), (1, -1), (1, 1) };
             bool found = false;
@@ -92,13 +92,16 @@ namespace _2022_Day_15
                         if (!(0 <= newX && newX <= 4000000 && 0 <= newY && newY <= 4000000)) continue;
                         if (CheckIfValid(newX, newY, sensorPosition, beaconPosition) && !found)
                         {
-                            Console.WriteLine(newX * 4000000 + newY);
-                            Console.WriteLine(newX);
-                            Console.WriteLine(newY);
+                            Console.WriteLine($"P2: {newX * 4000000 + newY}");
                             found = true;
+                            break;
                         } 
                     }
+
+                    if (found) break;
                 }
+
+                if (found) break;
             }
 
             Console.ReadLine();
