@@ -11,18 +11,14 @@ namespace _2022_Day_16
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             string[] input = File.ReadAllLines("../../input.txt");
 
             long countA = 0;
 
             Dictionary<string, long> rates = new Dictionary<string, long>();
-            // open = true
-            Dictionary<string, bool> states = new Dictionary<string, bool>();
             Dictionary<string, List<string>> leads = new Dictionary<string, List<string>>();
-
-            List<Node> graph = new List<Node>();
 
             for (int i = 0; i < input.Length; i++)
             {
@@ -35,67 +31,46 @@ namespace _2022_Day_16
                     connections.Add(split.Split(' ')[1].Trim());
                 }
 
-                Node working = new Node();
-                working.Name = valve;
-                working.Rate = flowRate;
-                working.Visited = false;
-                working.CameFrom = new List<Node>();
-                working.Connections = new List<Node>();
-
-                graph.Add(working);
-
                 rates.Add(valve, flowRate);
-                states.Add(valve, false);
                 leads.Add(valve, connections);
             }
 
-            long maxRate = graph.Max(x => x.Rate) + 1;
+            Dictionary<string, Dictionary<string, long>> distances = new Dictionary<string, Dictionary<string, long>>();
 
-            for (int i = 0; i < graph.Count; i++)
+            foreach (var key in rates.Keys)
             {
-                foreach (string s in leads[graph[i].Name])
+                Dictionary<string, long> paths = new Dictionary<string, long>();
+                paths[key] = 0;
+
+                Dictionary<string, bool> visited = new Dictionary<string, bool>();
+                foreach (string tempKey in rates.Keys) visited.Add(tempKey, false);
+
+                Queue<string> queue = new Queue<string>();
+                queue.Enqueue(key);
+
+                while (queue.Count > 0)
                 {
-                    graph[i].Connections.Add(graph.Where(x => x.Name == s).First());
+                    string current = queue.Dequeue();
+
+                    foreach (string point in leads[current])
+                    {
+                        long cost = paths[current] + 1;
+                        if (!paths.ContainsKey(point)) paths.Add(point, cost);
+                        else if (paths[point] > cost) paths[point] = cost;
+                        if (!visited[point]) queue.Enqueue(point);
+                    }
+
+                    visited[current] = true;
                 }
 
-                graph[i].Rate = maxRate - graph[i].Rate;
+                distances.Add(key, paths);
             }
-
-
-
+            
             Console.WriteLine($"P1: {countA}");
             Console.ReadLine();
 
-            // int maxTime = 30;
-            // int currentTime = 0;
-            //
-            // string current = "AA";
-            //
-            // while (currentTime < maxTime)
-            // {
-            //     foreach (var valve in states.Keys) if (states[valve]) countA += rates[valve];
-            //     
-            //     if (rates[current] > 0)
-            //     {
-            //         states[current] = true;
-            //
-            //     }
-            //
-            //     currentTime++;
-            //     Console.WriteLine(currentTime);
-            // }
-
-
         }
-    }
 
-    class Node
-    {
-        public string Name;
-        public long Rate;
-        public List<Node> Connections;
-        public List<Node> CameFrom;
-        public bool Visited;
-        public long MinDistance;
+        // I started optimising this and lost faith
     }
 }
